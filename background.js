@@ -119,12 +119,13 @@ async function fetchData(map_bounds_coordinates) {
         if (response.ok) {
             const data = await response.json();
             const list_results = data.cat1?.searchResults?.listResults || [];
+            const orderedUniqueKeys = [...new Set(specific_keys)];
             list_results.forEach(item => {
                 const filtered_item = {};
-                specific_keys.forEach(key => {
-                    if (item[key]) {
+                orderedUniqueKeys.forEach(key => {
+                    if (item[key] !== undefined) {
                         filtered_item[key] = item[key];
-                    } else if (item.hdpData?.homeInfo?.[key]) {
+                    } else if (item.hdpData?.homeInfo?.[key] !== undefined) {
                         filtered_item[key] = item.hdpData.homeInfo[key];
                     }
                 });
@@ -133,7 +134,33 @@ async function fetchData(map_bounds_coordinates) {
         }
     }
 
-    // Convert filteredItems to CSV format
-    const csv = filteredItems.map(item => Object.values(item).join(',')).join('\n');
+    const orderedUniqueKeys = [...new Set(specific_keys)];
+    const csv = convertArrayOfObjectsToCSV(filteredItems, orderedUniqueKeys);
     downloadCSV(csv, 'zillow_data.csv');
+}
+
+function convertArrayOfObjectsToCSV(data, columnKeys) {
+    if (!data || !data.length) {
+        return '';
+    }
+
+    const escapeCsvField = (field) => {
+        if (field === null || field === undefined) {
+            return '';
+        }
+        const stringField = String(field);
+        // If the field contains a comma, a double quote, or a newline, it needs to be quoted.
+        if (/[",\n]/.test(stringField)) {
+            // Escape any double quotes by doubling them, then wrap the whole field in double quotes.
+            return `"${stringField.replace(/"/g, '""')}"`;
+        }
+        return stringField;
+    };
+
+    const header = columnKeys.map(key => escapeCsvField(key)).join(',');
+    const rows = data.map(item =>
+        columnKeys.map(key => escapeCsvField(item[key])).join(',')
+    );
+
+    return [header, ...rows].join('\n');
 }
