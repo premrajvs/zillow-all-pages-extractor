@@ -17,7 +17,7 @@ This extension allows you to export property search results from Zillow.com into
     To fix this, Click on any one of the listings from the search results.
     This step is only required if you do not see the long URL in the browser.
 
-        ![Step 3: Click a listing](screenshots/step3.2.png)
+    ![Step 3: Click a listing](screenshots/step3.2.png)
 
 4.  After viewing the listing, close it to return to the search results page. Copy the complete URL from your browser's address bar.
 
